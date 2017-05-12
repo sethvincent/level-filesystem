@@ -33,7 +33,7 @@ module.exports = function(db) {
 		key = normalize(key);
 		if (key === '/') return process.nextTick(cb.bind(null, null, ROOT, '/'));
 		db.get(prefix(key), {valueEncoding:'json'}, function(err, doc) {
-			if (err && err.notFound) return cb(errno.ENOENT(key), null, key);
+			if (err && err.notFound || !doc) return cb(errno.ENOENT(key), null, key);
 			if (err) return cb(err, null, key);
 			cb(null, stat(doc), key);
 		});
@@ -70,7 +70,6 @@ module.exports = function(db) {
 	var resolve = function(dir, cb) {
 		var root = '/';
 		var parts = dir.split('/').slice(1);
-
 		var loop = function() {
 			that.get(path.join(root, parts.shift()), function(err, doc, key) {
 				if (err) return cb(err, doc, dir);
